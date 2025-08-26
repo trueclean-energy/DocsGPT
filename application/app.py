@@ -27,6 +27,7 @@ if platform.system() == "Windows":
 dotenv.load_dotenv()
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size
 app.register_blueprint(user)
 app.register_blueprint(answer)
 app.register_blueprint(internal)

@@ -412,6 +412,10 @@ show_final_status() {
     echo "• Change model: Edit LLM_NAME in .env file and restart backend"
     
     print_success "DocsGPT is ready to use!"
+    echo -e "\n${BOLD}File Upload Limits:${NC}"
+    echo "• Maximum file size: 100MB per file"
+    echo "• Multiple files can be uploaded together"
+    echo "• Supported formats: PDF, DOCX, TXT, XLSX, CSV, and more"
 }
 
 # Function to handle cleanup on script exit

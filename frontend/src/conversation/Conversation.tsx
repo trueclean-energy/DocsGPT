@@ -71,7 +71,7 @@ export default function Conversation() {
     onDragLeave: () => {
       setHandleDragActive(false);
     },
-    maxSize: 25000000,
+    maxSize: 100000000,
     accept: {
       'application/pdf': ['.pdf'],
       'text/plain': ['.txt'],
