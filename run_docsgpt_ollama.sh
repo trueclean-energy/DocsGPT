@@ -71,13 +71,23 @@ check_docker() {
 check_docker_compose() {
     print_status "Checking Docker Compose..."
     
-    if ! command_exists docker-compose && ! docker compose version >/dev/null 2>&1; then
-        print_error "Docker Compose is not installed. Please install Docker Compose first."
-        print_status "Visit: https://docs.docker.com/compose/install/"
-        exit 1
+    # Check for docker compose (new version)
+    if docker compose version >/dev/null 2>&1; then
+        print_success "Docker Compose is available"
+        DOCKER_COMPOSE_CMD="docker compose"
+        return 0
     fi
     
-    print_success "Docker Compose is available"
+    # Check for docker-compose (old version)
+    if docker-compose --version >/dev/null 2>&1; then
+        print_success "Docker Compose is available (legacy)"
+        DOCKER_COMPOSE_CMD="docker-compose"
+        return 0
+    fi
+    
+    print_error "Docker Compose is not installed"
+    print_info "Please install Docker Compose and try again"
+    exit 1
 }
 
 # Function to check system requirements
@@ -289,10 +299,10 @@ start_services() {
     
     # Build and start services
     print_status "Building Docker images..."
-    docker compose "${compose_files[@]}" build
+    $DOCKER_COMPOSE_CMD "${compose_files[@]}" build
     
     print_status "Starting services..."
-    docker compose "${compose_files[@]}" up -d
+    $DOCKER_COMPOSE_CMD "${compose_files[@]}" up -d
     
     print_success "Services started successfully"
 }
@@ -317,7 +327,7 @@ wait_for_services() {
     # Wait for Ollama to be ready
     local attempts=0
     while [ $attempts -lt 60 ]; do
-        if docker compose "${compose_files[@]}" ps | grep -q "ollama.*Up"; then
+        if $DOCKER_COMPOSE_CMD "${compose_files[@]}" ps | grep -q "ollama.*Up"; then
             print_success "Ollama service is ready"
             break
         fi

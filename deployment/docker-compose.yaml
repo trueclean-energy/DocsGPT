@@ -1,4 +1,3 @@
-name: docsgpt-oss
 services:
   frontend:
     build: ../frontend
