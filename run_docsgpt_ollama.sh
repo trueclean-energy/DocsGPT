@@ -71,23 +71,13 @@ check_docker() {
 check_docker_compose() {
     print_status "Checking Docker Compose..."
     
-    # Check for docker compose (new version)
-    if docker compose version >/dev/null 2>&1; then
-        print_success "Docker Compose is available"
-        DOCKER_COMPOSE_CMD="docker compose"
-        return 0
+    if ! command_exists docker-compose && ! docker compose version >/dev/null 2>&1; then
+        print_error "Docker Compose is not installed. Please install Docker Compose first."
+        print_status "Visit: https://docs.docker.com/compose/install/"
+        exit 1
     fi
     
-    # Check for docker-compose (old version)
-    if docker-compose --version >/dev/null 2>&1; then
-        print_success "Docker Compose is available (legacy)"
-        DOCKER_COMPOSE_CMD="docker-compose"
-        return 0
-    fi
-    
-    print_error "Docker Compose is not installed"
-    print_info "Please install Docker Compose and try again"
-    exit 1
+    print_success "Docker Compose is available"
 }
 
 # Function to check system requirements
@@ -299,10 +289,10 @@ start_services() {
     
     # Build and start services
     print_status "Building Docker images..."
-    $DOCKER_COMPOSE_CMD "${compose_files[@]}" build
+    docker compose "${compose_files[@]}" build
     
     print_status "Starting services..."
-    $DOCKER_COMPOSE_CMD "${compose_files[@]}" up -d
+    docker compose "${compose_files[@]}" up -d
     
     print_success "Services started successfully"
 }
@@ -327,7 +317,7 @@ wait_for_services() {
     # Wait for Ollama to be ready
     local attempts=0
     while [ $attempts -lt 60 ]; do
-        if $DOCKER_COMPOSE_CMD "${compose_files[@]}" ps | grep -q "ollama.*Up"; then
+        if docker compose "${compose_files[@]}" ps | grep -q "ollama.*Up"; then
             print_success "Ollama service is ready"
             break
         fi
@@ -377,14 +367,14 @@ pull_model() {
     fi
     
     # Check if model is already available
-    if docker compose "${compose_files[@]}" exec -T ollama ollama list | grep -q "$MODEL_NAME"; then
+    if $DOCKER_COMPOSE_CMD "${compose_files[@]}" exec -T ollama ollama list | grep -q "$MODEL_NAME"; then
         print_success "Model $MODEL_NAME is already available"
         return 0
     fi
     
     # Pull the model
     print_status "Downloading model (this may take several minutes)..."
-    docker compose "${compose_files[@]}" exec -T ollama ollama pull "$MODEL_NAME"
+    $DOCKER_COMPOSE_CMD "${compose_files[@]}" exec -T ollama ollama pull "$MODEL_NAME"
     
     if [ $? -eq 0 ]; then
         print_success "Model $MODEL_NAME downloaded successfully"
@@ -417,8 +407,8 @@ show_final_status() {
     echo "• Restart services: docker compose restart"
     
     echo -e "\n${BOLD}Model management:${NC}"
-    echo "• List models: docker compose exec ollama ollama list"
-    echo "• Pull new model: docker compose exec ollama ollama pull <model_name>"
+    echo "• List models: $DOCKER_COMPOSE_CMD exec ollama ollama list"
+    echo "• Pull new model: $DOCKER_COMPOSE_CMD exec ollama ollama pull <model_name>"
     echo "• Change model: Edit LLM_NAME in .env file and restart backend"
     
     print_success "DocsGPT is ready to use!"
