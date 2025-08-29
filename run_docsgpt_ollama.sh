@@ -289,10 +289,10 @@ start_services() {
     
     # Build and start services
     print_status "Building Docker images..."
-    docker compose "${compose_files[@]}" build
+    $DOCKER_COMPOSE_CMD "${compose_files[@]}" build
     
     print_status "Starting services..."
-    docker compose "${compose_files[@]}" up -d
+    $DOCKER_COMPOSE_CMD "${compose_files[@]}" up -d
     
     print_success "Services started successfully"
 }
@@ -317,7 +317,7 @@ wait_for_services() {
     # Wait for Ollama to be ready
     local attempts=0
     while [ $attempts -lt 60 ]; do
-        if docker compose "${compose_files[@]}" ps | grep -q "ollama.*Up"; then
+        if $DOCKER_COMPOSE_CMD "${compose_files[@]}" ps | grep -q "ollama.*Up"; then
             print_success "Ollama service is ready"
             break
         fi
@@ -328,7 +328,7 @@ wait_for_services() {
     
     if [ $attempts -eq 60 ]; then
         print_error "Ollama service failed to start"
-        docker compose "${compose_files[@]}" logs ollama
+        $DOCKER_COMPOSE_CMD "${compose_files[@]}" logs ollama
         exit 1
     fi
     
