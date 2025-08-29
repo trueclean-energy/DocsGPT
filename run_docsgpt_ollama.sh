@@ -71,13 +71,23 @@ check_docker() {
 check_docker_compose() {
     print_status "Checking Docker Compose..."
     
-    if ! command_exists docker-compose && ! docker compose version >/dev/null 2>&1; then
-        print_error "Docker Compose is not installed. Please install Docker Compose first."
-        print_status "Visit: https://docs.docker.com/compose/install/"
-        exit 1
+    # Check for docker compose (new version)
+    if docker compose version >/dev/null 2>&1; then
+        print_success "Docker Compose is available"
+        DOCKER_COMPOSE_CMD="docker compose"
+        return 0
     fi
     
-    print_success "Docker Compose is available"
+    # Check for docker-compose (old version)
+    if docker-compose --version >/dev/null 2>&1; then
+        print_success "Docker Compose is available (legacy)"
+        DOCKER_COMPOSE_CMD="docker-compose"
+        return 0
+    fi
+    
+    print_error "Docker Compose is not installed"
+    print_info "Please install Docker Compose and try again"
+    exit 1
 }
 
 # Function to check system requirements
