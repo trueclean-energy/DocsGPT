@@ -1,5 +1,5 @@
 export const baseURL =
-  import.meta.env.VITE_API_HOST || '';
+  import.meta.env.VITE_API_HOST || 'http://localhost:7091';
 
 const getHeaders = (
   token: string | null,
