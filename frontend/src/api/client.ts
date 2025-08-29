@@ -1,5 +1,5 @@
 export const baseURL =
-  import.meta.env.VITE_API_HOST || 'https://docsapi.arc53.com';
+  import.meta.env.VITE_API_HOST || '';
 
 const getHeaders = (
   token: string | null,

@@ -4,6 +4,7 @@ import uuid
 
 import dotenv
 from flask import Flask, jsonify, redirect, request
+from flask_cors import CORS
 from jose import jwt
 
 from application.auth import handle_auth
@@ -28,6 +29,10 @@ dotenv.load_dotenv()
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size
+
+# Enable CORS for all routes
+CORS(app, origins=["*"], supports_credentials=True)
+
 app.register_blueprint(user)
 app.register_blueprint(answer)
 app.register_blueprint(internal)
@@ -89,8 +94,6 @@ def generate_token():
 
 @app.before_request
 def authenticate_request():
-    if request.method == "OPTIONS":
-        return "", 200
     decoded_token = handle_auth(request)
     if not decoded_token:
         request.decoded_token = None
